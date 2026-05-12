@@ -15,76 +15,33 @@
     
     <style>
         :root { --primary: #bb86fc; --bg: #0a0a0a; --card: #161616; --input: #222; --text: #ffffff; --danger: #cf6679; }
-        
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: var(--bg); color: var(--text); 
-            margin: 0; display: flex; justify-content: center; min-height: 100vh; 
-        }
-
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; min-height: 100vh; }
         .vault-container { width: 100%; max-width: 400px; padding: 40px 20px; box-sizing: border-box; }
-        
         .header { text-align: center; margin-bottom: 30px; }
         .header i { font-size: 40px; color: var(--primary); margin-bottom: 10px; }
-        .header h1 { font-size: 28px; margin: 0; letter-spacing: -1px; }
-
-        .btn-google { 
-            display: flex; align-items: center; justify-content: center; 
-            width: 100%; padding: 15px; border-radius: 14px; border: none; 
-            font-weight: 700; cursor: pointer; transition: 0.3s; 
-            background: white; color: #000; margin-bottom: 20px;
-        }
+        .header h1 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+        .btn-google { display: flex; align-items: center; justify-content: center; width: 100%; padding: 15px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer; background: white; color: #000; margin-bottom: 20px; }
         .btn-google i { color: #4285F4; margin-right: 12px; font-size: 18px; }
-
         .divider { display: flex; align-items: center; margin: 25px 0; color: #444; }
         .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #222; }
         .divider span { padding: 0 10px; font-size: 11px; text-transform: uppercase; font-weight: 700; }
-
         .form-group { margin-bottom: 15px; }
-        input { 
-            width: 100%; padding: 16px; background: var(--input); 
-            border: 1px solid #333; border-radius: 12px; color: white; 
-            box-sizing: border-box; font-size: 16px; 
-        }
-        input:focus { border-color: var(--primary); outline: none; background: #282828; }
-
-        .main-btn { 
-            background: var(--primary); color: #000; border: none; 
-            padding: 16px; border-radius: 14px; width: 100%; 
-            font-weight: 800; cursor: pointer; font-size: 15px;
-        }
-
-        .secondary-btn {
-            background: transparent; border: 2px solid var(--primary); color: var(--primary);
-            padding: 12px; border-radius: 14px; width: 100%; font-weight: 700; cursor: pointer;
-            margin-bottom: 25px;
-        }
-
-        .link-text { 
-            display: block; text-align: center; margin-top: 20px; 
-            color: #888; font-size: 13px; cursor: pointer;
-            background: none; border: none; width: 100%;
-        }
-
-        .key-card { 
-            background: var(--card); padding: 20px; border-radius: 18px; 
-            margin-bottom: 15px; display: flex; justify-content: space-between; 
-            align-items: center; border: 1px solid #222;
-        }
+        input { width: 100%; padding: 16px; background: var(--input); border: 1px solid #333; border-radius: 12px; color: white; box-sizing: border-box; font-size: 16px; }
+        .main-btn { background: var(--primary); color: #000; border: none; padding: 16px; border-radius: 14px; width: 100%; font-weight: 800; cursor: pointer; }
+        .secondary-btn { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 12px; border-radius: 14px; width: 100%; font-weight: 700; cursor: pointer; margin-bottom: 25px; }
+        .link-text { display: block; text-align: center; margin-top: 20px; color: #888; font-size: 13px; cursor: pointer; background: none; border: none; width: 100%; }
+        .key-card { background: var(--card); padding: 20px; border-radius: 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
         .key-info h4 { margin: 0; color: var(--primary); font-size: 18px; }
         .key-info p { margin: 6px 0 0; color: #777; font-size: 13px; }
-        
         .actions { display: flex; gap: 10px; }
         .view-btn { background: #222; border: none; color: var(--primary); width: 45px; height: 45px; border-radius: 12px; cursor: pointer; }
         .delete-btn { background: #222; border: none; color: var(--danger); width: 45px; height: 45px; border-radius: 12px; cursor: pointer; }
-
         .hidden { display: none; }
         .fade-in { animation: fadeIn 0.4s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
     <div class="vault-container">
         <div class="header">
             <i class="fa-solid fa-vault"></i>
@@ -92,7 +49,7 @@
         </div>
 
         <div id="auth-view" class="fade-in">
-            <button class="btn-google" onclick="loginSocial()">
+            <button class="btn-google" id="btn-google-login">
                 <i class="fa-brands fa-google"></i> Continuar con Google
             </button>
             <div class="divider"><span>O con tu cuenta</span></div>
@@ -100,28 +57,19 @@
             <div class="form-group"><input type="password" id="auth-pass" placeholder="Contraseña"></div>
             <button class="main-btn" onclick="emailAuth('login')">ENTRAR</button>
             <button class="link-text" onclick="emailAuth('register')">Crear una cuenta nueva</button>
-            <button class="link-text" onclick="resetPassword()" style="font-size:11px">Olvidé mi clave</button>
         </div>
 
         <div id="app-view" class="hidden fade-in">
-            <button id="btn-show-add" class="secondary-btn" onclick="toggleAddForm()">
-                <i class="fa-solid fa-plus"></i> AÑADIR LLAVE
-            </button>
-
+            <button id="btn-show-add" class="secondary-btn" onclick="toggleAddForm()">+ AÑADIR LLAVE</button>
             <div id="add-form" class="hidden" style="background: var(--card); padding: 25px; border-radius: 20px; margin-bottom: 30px; border: 1px solid var(--primary);">
-                <h3 style="margin-top:0; color: var(--primary);">Nuevo Registro</h3>
-                <div class="form-group"><input type="text" id="new-name" placeholder="Nombre (ej: Netflix)"></div>
-                <div class="form-group"><input type="email" id="new-user" placeholder="Usuario / Correo"></div>
+                <div class="form-group"><input type="text" id="new-name" placeholder="App (ej: Netflix)"></div>
+                <div class="form-group"><input type="text" id="new-user" placeholder="Usuario"></div>
                 <div class="form-group"><input type="password" id="new-pass" placeholder="Contraseña"></div>
-                <button class="main-btn" onclick="saveKey()">GUARDAR AHORA</button>
+                <button class="main-btn" onclick="saveKey()">GUARDAR</button>
                 <button class="link-text" onclick="toggleAddForm()">Cancelar</button>
             </div>
-
             <div id="keys-list"></div>
-            
-            <button class="link-text" onclick="logout()" style="margin-top: 40px; color: #cf6679; font-weight: bold;">
-                <i class="fa-solid fa-right-from-bracket"></i> CERRAR SESIÓN SEGURA
-            </button>
+            <button class="link-text" onclick="logout()" style="color: var(--danger);">CERRAR SESIÓN</button>
         </div>
     </div>
 
@@ -140,52 +88,48 @@
         const db = firebase.firestore();
         const secret = "HK_ENCRYPT_PRO_2026";
 
-        // --- LÓGICA DE INICIO ---
+        // --- LÓGICA DE LOGIN GOOGLE MEJORADA ---
+        document.getElementById('btn-google-login').addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            // Redirect es mucho más estable para APK y navegadores móviles
+            auth.signInWithRedirect(provider);
+        });
+
+        // Capturar el resultado del redireccionamiento al cargar la página
+        auth.getRedirectResult().then((result) => {
+            if (result.user) console.log("Login exitoso vía Redirect");
+        }).catch((error) => {
+            if(error.code !== 'auth/popup-closed-by-user') {
+                console.error("Error en redirect:", error);
+            }
+        });
+
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('app-view').classList.remove('hidden');
-                loadKeys();
+                setTimeout(loadKeys, 500);
             } else {
                 document.getElementById('auth-view').classList.remove('hidden');
                 document.getElementById('app-view').classList.add('hidden');
             }
         });
 
-        // Manejar el resultado del redireccionamiento de Google
-        auth.getRedirectResult().catch(e => console.error("Error en redirección:", e));
-
-        async function loginSocial() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // Cambiamos a Redirección para evitar bloqueos de Popups
-            try { await auth.signInWithRedirect(provider); } catch (e) { alert(e.message); }
-        }
-
+        // --- RESTO DE FUNCIONES ---
         async function emailAuth(mode) {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
-            if(!email || !pass) return alert("Completa los datos");
             try {
                 if(mode === 'login') await auth.signInWithEmailAndPassword(email, pass);
                 else await auth.createUserWithEmailAndPassword(email, pass);
             } catch (e) { alert(e.message); }
         }
 
-        function logout() {
-            auth.signOut().then(() => location.reload());
-        }
-
-        async function resetPassword() {
-            const email = document.getElementById('auth-email').value;
-            if(!email) return alert("Escribe tu correo arriba.");
-            try { await auth.sendPasswordResetEmail(email); alert("Correo enviado."); } catch (e) { alert(e.message); }
-        }
+        function logout() { auth.signOut().then(() => location.reload()); }
 
         function toggleAddForm() {
-            const form = document.getElementById('add-form');
-            const btn = document.getElementById('btn-show-add');
-            form.classList.toggle('hidden');
-            btn.classList.toggle('hidden');
+            document.getElementById('add-form').classList.toggle('hidden');
+            document.getElementById('btn-show-add').classList.toggle('hidden');
         }
 
         async function saveKey() {
@@ -193,15 +137,11 @@
             const user = document.getElementById('new-user').value;
             const pass = document.getElementById('new-pass').value;
             if(!name || !pass) return alert("Faltan datos");
-
             try {
                 const encrypted = CryptoJS.AES.encrypt(pass, secret).toString();
                 await db.collection("vault").add({
                     owner: auth.currentUser.uid,
-                    name: name,
-                    user: user,
-                    pass: encrypted,
-                    date: firebase.firestore.FieldValue.serverTimestamp()
+                    name, user, pass: encrypted, date: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 document.getElementById('new-name').value = '';
                 document.getElementById('new-user').value = '';
@@ -212,57 +152,23 @@
 
         function loadKeys() {
             if (!auth.currentUser) return;
-            db.collection("vault")
-              .where("owner", "==", auth.currentUser.uid)
+            db.collection("vault").where("owner", "==", auth.currentUser.uid)
               .onSnapshot(snap => {
                 const list = document.getElementById('keys-list');
                 list.innerHTML = "";
-                if (snap.empty) {
-                    list.innerHTML = "<p style='color:#444; text-align:center'>No hay llaves guardadas.</p>";
-                    return;
-                }
                 snap.forEach(doc => {
                     const data = doc.data();
                     const card = document.createElement('div');
                     card.className = 'key-card fade-in';
                     card.innerHTML = `
-                        <div class="key-info">
-                            <h4>${data.name}</h4>
-                            <p>${data.user || 'Sin usuario'}</p>
-                        </div>
+                        <div class="key-info"><h4>${data.name}</h4><p>${data.user || ''}</p></div>
                         <div class="actions">
-                            <button class="view-btn" onclick="revealKey('${data.pass}', '${data.name}')">
-                                <i class="fa-solid fa-fingerprint"></i>
-                            </button>
-                            <button class="delete-btn" onclick="deleteKey('${doc.id}', '${data.name}')">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
+                            <button class="view-btn" onclick="revealKey('${data.pass}', '${data.name}')"><i class="fa-solid fa-fingerprint"></i></button>
+                            <button class="delete-btn" onclick="deleteKey('${doc.id}', '${data.name}')"><i class="fa-solid fa-trash"></i></button>
+                        </div>`;
                     list.appendChild(card);
                 });
             });
         }
 
         function revealKey(cipher, title) {
-            if(confirm(`¿Desbloquear clave de ${title}?`)) {
-                try {
-                    const dec = CryptoJS.AES.decrypt(cipher, secret).toString(CryptoJS.enc.Utf8);
-                    alert(`CLAVE DE ${title.toUpperCase()}:\n\n${dec}`);
-                } catch(e) { alert("Error al descifrar."); }
-            }
-        }
-
-        async function deleteKey(id, title) {
-            if(confirm(`¿Estás seguro de eliminar la llave de ${title}?`)) {
-                if(confirm("Confirma con tu huella/identidad para ELIMINAR definitivamente.")) {
-                    try {
-                        await db.collection("vault").doc(id).delete();
-                        alert("Llave eliminada correctamente.");
-                    } catch (e) { alert("Error al eliminar."); }
-                }
-            }
-        }
-    </script>
-</body>
-</html>

@@ -15,7 +15,7 @@
     
     <style>
         :root { --primary: #bb86fc; --bg: #0a0a0a; --card: #161616; --input: #222; --text: #ffffff; --danger: #cf6679; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; min-height: 100vh; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
         .vault-container { width: 100%; max-width: 400px; padding: 40px 20px; box-sizing: border-box; }
         .header { text-align: center; margin-bottom: 30px; }
         .header i { font-size: 40px; color: var(--primary); margin-bottom: 10px; }
@@ -36,7 +36,7 @@
         .actions { display: flex; gap: 10px; }
         .view-btn { background: #222; border: none; color: var(--primary); width: 45px; height: 45px; border-radius: 12px; cursor: pointer; }
         .delete-btn { background: #222; border: none; color: var(--danger); width: 45px; height: 45px; border-radius: 12px; cursor: pointer; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .fade-in { animation: fadeIn 0.4s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -49,18 +49,19 @@
         </div>
 
         <div id="auth-view" class="fade-in">
-            <button class="btn-google" id="btn-google-login">
+            <button class="btn-google" onclick="loginGoogle()">
                 <i class="fa-brands fa-google"></i> Continuar con Google
             </button>
             <div class="divider"><span>O con tu cuenta</span></div>
-            <div class="form-group"><input type="email" id="auth-email" placeholder="Correo electrónico"></div>
+            <div class="form-group"><input type="email" id="auth-email" placeholder="Correo"></div>
             <div class="form-group"><input type="password" id="auth-pass" placeholder="Contraseña"></div>
             <button class="main-btn" onclick="emailAuth('login')">ENTRAR</button>
-            <button class="link-text" onclick="emailAuth('register')">Crear una cuenta nueva</button>
+            <button class="link-text" onclick="emailAuth('register')">Crear cuenta nueva</button>
         </div>
 
         <div id="app-view" class="hidden fade-in">
             <button id="btn-show-add" class="secondary-btn" onclick="toggleAddForm()">+ AÑADIR LLAVE</button>
+            
             <div id="add-form" class="hidden" style="background: var(--card); padding: 25px; border-radius: 20px; margin-bottom: 30px; border: 1px solid var(--primary);">
                 <div class="form-group"><input type="text" id="new-name" placeholder="App (ej: Netflix)"></div>
                 <div class="form-group"><input type="text" id="new-user" placeholder="Usuario"></div>
@@ -68,8 +69,9 @@
                 <button class="main-btn" onclick="saveKey()">GUARDAR</button>
                 <button class="link-text" onclick="toggleAddForm()">Cancelar</button>
             </div>
+
             <div id="keys-list"></div>
-            <button class="link-text" onclick="logout()" style="color: var(--danger);">CERRAR SESIÓN</button>
+            <button class="link-text" onclick="logout()" style="color: var(--danger); margin-top: 30px;">CERRAR SESIÓN</button>
         </div>
     </div>
 
@@ -88,38 +90,50 @@
         const db = firebase.firestore();
         const secret = "HK_ENCRYPT_PRO_2026";
 
-        // --- LÓGICA DE LOGIN GOOGLE MEJORADA ---
-        document.getElementById('btn-google-login').addEventListener('click', () => {
+        // --- ARREGLO PARA GOOGLE ---
+        async function loginGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // Redirect es mucho más estable para APK y navegadores móviles
-            auth.signInWithRedirect(provider);
-        });
+            try {
+                // Forzamos persistencia local antes de ir a Google
+                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                await auth.signInWithRedirect(provider);
+            } catch (e) { alert(e.message); }
+        }
 
-        // Capturar el resultado del redireccionamiento al cargar la página
-        auth.getRedirectResult().then((result) => {
-            if (result.user) console.log("Login exitoso vía Redirect");
-        }).catch((error) => {
-            if(error.code !== 'auth/popup-closed-by-user') {
-                console.error("Error en redirect:", error);
+        // Este código corre CADA VEZ que la página carga
+        auth.getRedirectResult().then(result => {
+            if (result.user) {
+                console.log("Sesión recuperada de Google");
+                mostrarApp();
             }
-        });
+        }).catch(e => console.error("Error recuperando sesión:", e));
 
+        // Observador principal
         auth.onAuthStateChanged(user => {
             if (user) {
-                document.getElementById('auth-view').classList.add('hidden');
-                document.getElementById('app-view').classList.remove('hidden');
-                setTimeout(loadKeys, 500);
+                mostrarApp();
             } else {
-                document.getElementById('auth-view').classList.remove('hidden');
-                document.getElementById('app-view').classList.add('hidden');
+                mostrarLogin();
             }
         });
 
-        // --- RESTO DE FUNCIONES ---
+        function mostrarApp() {
+            document.getElementById('auth-view').classList.add('hidden');
+            document.getElementById('app-view').classList.remove('hidden');
+            loadKeys();
+        }
+
+        function mostrarLogin() {
+            document.getElementById('auth-view').classList.remove('hidden');
+            document.getElementById('app-view').classList.add('hidden');
+        }
+
+        // --- FUNCIONES CORE ---
         async function emailAuth(mode) {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
             try {
+                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
                 if(mode === 'login') await auth.signInWithEmailAndPassword(email, pass);
                 else await auth.createUserWithEmailAndPassword(email, pass);
             } catch (e) { alert(e.message); }
@@ -156,6 +170,7 @@
               .onSnapshot(snap => {
                 const list = document.getElementById('keys-list');
                 list.innerHTML = "";
+                if(snap.empty) list.innerHTML = "<p style='color:#444;text-align:center'>Vacío</p>";
                 snap.forEach(doc => {
                     const data = doc.data();
                     const card = document.createElement('div');
@@ -172,3 +187,19 @@
         }
 
         function revealKey(cipher, title) {
+            if(confirm(`¿Ver clave de ${title}?`)) {
+                try {
+                    const dec = CryptoJS.AES.decrypt(cipher, secret).toString(CryptoJS.enc.Utf8);
+                    alert(`CLAVE: ${dec}`);
+                } catch(e) { alert("Error"); }
+            }
+        }
+
+        async function deleteKey(id, title) {
+            if(confirm(`¿Eliminar ${title}?`) && confirm("Confirmar identidad.")) {
+                await db.collection("vault").doc(id).delete();
+            }
+        }
+    </script>
+</body>
+</html>
